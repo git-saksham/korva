@@ -1,0 +1,7 @@
+<div class="d-flex justify-content-between align-items-center mb-3"><span class="muted" style="font-size:.84rem">{{ products|length }} product{{ '' if products|length==1 else 's' }}</span></div>
+{% if products %}
+<div class="pgrid">{% for p in products %}{% include "partials/product_card.html" %}{% endfor %}</div>
+{% else %}
+<div class="empty"><h3>No matches</h3><p>Try a different filter or search term.</p><a href="{{ url_for('main.shop') }}" class="btn-k-ghost mt-3">Clear filters</a></div>
+{% endif %}
+<script>document.querySelectorAll('#results .reveal').forEach(e=>e.classList.add('in'))</script>

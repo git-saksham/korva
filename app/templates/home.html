@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block bodyclass %}has-promo hero-page{% endblock %}
+{% block content %}
+<section class="hero">
+  <img class="hero-img" src="{{ url_for('main.hero_art') }}" alt="" fetchpriority="high">
+  <div class="container-k hero-content">
+    <div class="eyebrow accent fade-up">FW26 · The Atlas Collection</div>
+    <h1 class="display fade-up d1 mt-3">Move <em>without</em> limits.</h1>
+    <p class="lead fade-up d2">Performance apparel engineered for the last mile and the final rep — in fabrics that move when you do.</p>
+    <a href="{{ url_for('main.shop') }}" class="btn-k accent fade-up d3">Shop collection <span class="arrow">→</span></a>
+  </div>
+  {% if featured %}<div class="hero-meta fade-up d3"><div class="eyebrow">Featured</div><div class="name">{{ featured[0].name }}</div><a class="link-arrow" href="{{ url_for('main.product', slug=featured[0].slug) }}">{{ featured[0].price|money }} — View</a></div>{% endif %}
+</section>
+
+<div class="value-strip"><div class="container-k"><div class="row row-cols-2 row-cols-lg-4 gx-3">
+  <div><b>01</b> Recycled performance fabrics</div><div><b>02</b> Free shipping {{ FREE_SHIP|money }}+</div>
+  <div><b>03</b> 30-day free returns</div><div><b>04</b> Tested by runners &amp; lifters</div></div></div></div>
+
+<section class="section"><div class="container-k">
+  <div class="section-head reveal"><div><div class="eyebrow mb-3">The season edit</div><h2>Featured collection</h2></div><a class="link-arrow" href="{{ url_for('main.shop') }}">View all</a></div>
+  <div class="pgrid">{% for p in featured %}{% include "partials/product_card.html" %}{% endfor %}</div>
+</div></section>
+
+<section class="pb-5"><div class="container-k">
+  <div class="section-head reveal"><div><div class="eyebrow mb-3">Shop by sport</div><h2>Choose your discipline</h2></div></div>
+  <div class="tiles">{% for t in sport_tiles %}
+    <a class="tile reveal" href="{{ url_for('main.shop', sport=t.sport) }}"><img src="{{ t.product.image_url() }}" alt="" loading="lazy">
+      <div class="cap"><div><div class="n">{{ t.count }} pieces</div><h3>{{ t.sport }}</h3></div><span class="go">→</span></div></a>{% endfor %}</div>
+</div></section>
+
+<section class="section"><div class="container-k">
+  <div class="section-head reveal"><div><div class="eyebrow mb-3">Most worn</div><h2>Best sellers</h2></div><a class="link-arrow" href="{{ url_for('main.shop', sort='featured') }}">Shop all</a></div>
+  <div class="pgrid">{% for p in best %}{% include "partials/product_card.html" %}{% endfor %}</div>
+</div></section>
+
+<section class="section statement"><div class="container-k">
+  <div class="eyebrow accent mb-4 reveal">Performance first</div>
+  <h2 class="reveal">Engineered for the last rep. <span>The last mile. The last minute.</span></h2>
+  <div class="row g-4 g-lg-5 mt-4 pt-lg-5">
+    <div class="col-md-4 reveal"><div class="stat"><div class="num">4<sup>-way</sup></div><p>Stretch fabrics that move with you through every range of motion.</p></div></div>
+    <div class="col-md-4 reveal"><div class="stat"><div class="num">85<sup>gsm</sup></div><p>Featherweight mesh that vents heat and dries in minutes.</p></div></div>
+    <div class="col-md-4 reveal"><div class="stat"><div class="num">78<sup>%</sup></div><p>Recycled content across the Atlas range — performance, responsibly.</p></div></div>
+  </div>
+</div></section>
+
+{% if recs %}
+<section class="section"><div class="container-k">
+  <div class="section-head reveal"><div><div class="eyebrow mb-3">{{ 'Based on your favourites' if personalised else 'Just landed' }}</div><h2>{{ 'Recommended for you' if personalised else 'New in' }}</h2></div></div>
+  <div class="pgrid">{% for p in recs %}{% include "partials/product_card.html" %}{% endfor %}</div>
+</div></section>
+{% endif %}
+
+<section class="section" style="padding-top:0"><div class="container-k"><div class="row g-5 align-items-center">
+  <div class="col-lg-6 reveal"><div class="story-img"><img src="{{ url_for('main.garment_art', garment='hoodie', hex_color='3b3f45') }}" alt="" loading="lazy"></div></div>
+  <div class="col-lg-5 offset-lg-1 reveal">
+    <div class="eyebrow mb-3">Our story</div><h2 style="font-size:clamp(2.2rem,4.4vw,3.6rem)">Built for the long run.</h2>
+    <p class="muted mt-4">KORVA started with one question: why does great sportswear fall apart before the athlete does? We design fewer, better pieces — tested over thousands of kilometres and cut with the clarity of a single idea.</p>
+    <p class="muted">No logos shouting. No seasonal throwaways. Just gear that earns its place in your rotation.</p>
+    <a href="{{ url_for('main.shop') }}" class="link-arrow d-inline-block mt-3">Explore the range</a>
+  </div>
+</div></div></section>
+
+<section class="section final-cta"><div class="container-k">
+  <div class="eyebrow mb-4 reveal">Ready when you are</div>
+  <h2 class="display reveal">Start <em>moving.</em></h2>
+  <a href="{{ url_for('main.shop') }}" class="btn-k accent mt-5 reveal">Shop collection <span class="arrow">→</span></a>
+</div></section>
+{% endblock %}

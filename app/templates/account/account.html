@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Account — {{ BRAND }}{% endblock %}
+{% block content %}
+<div class="page"><div class="container-k">
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-5"><div><div class="eyebrow mb-3">Account</div><h1 class="display page-title">Hi, {{ current_user.name.split()[0] }}</h1></div>
+    <div class="d-flex gap-2">{% if current_user.is_admin %}<a class="btn-k-ghost" href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
+    <form method="post" action="{{ url_for('auth.logout') }}">{{ form.hidden_tag() }}<button class="btn-k-ghost">Sign out</button></form></div></div>
+  <div class="row g-5">
+    <div class="col-lg-4"><div class="card-k">
+      <h5 class="mb-4" style="font-size:1rem">Profile</h5>
+      <form method="post" class="needs-validation" novalidate>{{ form.hidden_tag() }}
+        <div class="field"><label>Full name</label>{{ form.name(class_='k-input', required=true) }}</div>
+        <div class="field"><label>Email</label><input class="k-input" value="{{ current_user.email }}" disabled></div>
+        <div class="field"><label>Phone</label>{{ form.phone(class_='k-input') }}</div>
+        <button class="btn-k block" type="submit">Save changes</button>
+      </form></div></div>
+    <div class="col-lg-8">
+      <h5 class="mb-4" style="font-size:1rem">Order history</h5>
+      {% if orders %}<div style="overflow-x:auto"><table class="k-table"><thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
+        {% for o in orders %}<tr><td><b>{{ o.number }}</b></td><td>{{ o.created_at.strftime('%d %b %Y') }}</td><td>{{ o.items|sum(attribute='quantity') }}</td><td>{{ o.total|money }}</td><td><span class="status {{ o.status }}">{{ o.status }}</span></td><td><a class="link-arrow" href="{{ url_for('account.order_detail', number=o.number) }}">View</a></td></tr>{% endfor %}
+      </tbody></table></div>
+      {% else %}<div class="empty" style="padding:50px 0"><h3>No orders yet</h3><a href="{{ url_for('main.shop') }}" class="btn-k mt-3">Start shopping</a></div>{% endif %}
+      {% if favs %}<h5 class="mb-4 mt-5" style="font-size:1rem">Favourites</h5><div class="pgrid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">{% for p in favs %}{% include "partials/product_card.html" %}{% endfor %}</div>{% endif %}
+    </div>
+  </div>
+</div></div>
+{% endblock %}

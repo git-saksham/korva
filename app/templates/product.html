@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }} — {{ BRAND }}{% endblock %}
+{% block desc %}{{ p.description[:150] }}{% endblock %}
+{% block content %}
+<div class="page"><div class="container-k">
+  <nav class="crumbs"><a href="{{ url_for('main.home') }}">Home</a> / <a href="{{ url_for('main.shop') }}">Shop</a> / <a href="{{ url_for('main.shop', category=p.category.slug) }}">{{ p.category.name }}</a> / {{ p.name }}</nav>
+  <div class="pdp" id="pdp" data-first-color="{{ p.colors[0].name if p.colors else '' }}">
+    <div class="gallery">
+      <div class="thumbs">{% for c in p.colors %}<button class="thumb {{ 'on' if loop.first }}" data-color="{{ c.name }}" aria-label="{{ c.name }}"><img src="{{ p.image_url(c.hex) }}" alt=""></button>{% endfor %}</div>
+      <div class="stage" id="stage"><img src="{{ p.image_url(p.colors[0].hex if p.colors else None) }}" alt="{{ p.name }}"></div>
+    </div>
+    <div>
+      <div class="d-flex gap-2 mb-2">{% if p.is_new %}<span class="tag accent">New</span>{% endif %}{% if p.compare_at_price %}<span class="tag">Sale</span>{% endif %}<span class="eyebrow ms-1" style="align-self:center">{{ p.category.name }} · {{ p.sport }}</span></div>
+      <h1 class="display">{{ p.name }}</h1>
+      <div class="price">{{ p.price|money }}{% if p.compare_at_price %}<span class="was">{{ p.compare_at_price|money }}</span>{% endif %}</div>
+      <p class="muted mt-4" style="max-width:52ch">{{ p.description }}</p>
+
+      <div class="opt-label">Colour <span id="color-label"></span></div>
+      <div class="d-flex gap-2 flex-wrap">{% for c in p.colors %}<button class="color-dot" data-color="{{ c.name }}" data-img="{{ p.image_url(c.hex) }}" aria-label="{{ c.name }}" title="{{ c.name }}"><i style="background:{{ c.hex }}"></i></button>{% endfor %}</div>
+
+      <div class="opt-label">Size <span>True to size · athletic fit</span></div>
+      <div class="size-grid" id="sizes">{% for s in p.sizes %}<button type="button" class="chip" data-size="{{ s }}">{{ s }}</button>{% endfor %}</div>
+      <div class="stock-note" id="stock-note"></div>
+
+      <div class="opt-label">Quantity</div>
+      <div class="qty"><button type="button" id="qty-minus" aria-label="Decrease">−</button><input id="qty" value="1" inputmode="numeric" aria-label="Quantity"><button type="button" id="qty-plus" aria-label="Increase">+</button></div>
+
+      <div class="buy-row">
+        <button class="btn-k accent" id="add-btn" {{ 'disabled' if not p.in_stock }}>{{ 'Add to bag' if p.in_stock else 'Sold out' }}</button>
+        <button class="wish-btn {{ 'on' if p.id in wish_ids }}" data-wish="{{ p.id }}" aria-label="Add to favourites"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/></svg></button>
+      </div>
+
+      <div class="acc">
+        <details class="acc-item" open><summary>Specifications</summary><div class="body"><table class="spec-table">{% for k, v in p.spec_pairs %}<tr><td>{{ k }}</td><td>{{ v }}</td></tr>{% endfor %}</table></div></details>
+        <details class="acc-item"><summary>Shipping &amp; returns</summary><div class="body">Free shipping on orders over {{ FREE_SHIP|money }}. Dispatched within 24 hours. Free returns within 30 days on unworn items.</div></details>
+      </div>
+    </div>
+  </div>
+</div>
+{% if related %}
+<section class="section"><div class="container-k">
+  <div class="section-head"><div><div class="eyebrow mb-3">Similar styles</div><h2>You may also like</h2></div></div>
+  <div class="pgrid">{% for p in related %}{% include "partials/product_card.html" %}{% endfor %}</div>
+</div></section>{% endif %}
+</div>
+<div class="sticky-buy" id="sticky-buy"><div><div class="display" style="font-size:.9rem">{{ p.name }}</div><div class="muted" style="font-size:.8rem">{{ p.price|money }}</div></div><button class="btn-k accent" id="sticky-add">Add to bag</button></div>
+<script type="application/json" id="variant-data">{{ variants|tojson }}</script>
+{% endblock %}

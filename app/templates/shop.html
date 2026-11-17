@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Shop — {{ BRAND }}{% endblock %}
+{% block content %}
+<div class="page"><div class="container-k">
+  <div class="mb-4"><div class="eyebrow mb-3">{{ f.get('sport') or 'The collection' }}</div><h1 class="display page-title">{{ 'Search: ' ~ term if term else (f.get('sport') or 'Shop all') }}</h1></div>
+  <form id="filter-form" method="get" action="{{ url_for('main.shop') }}">
+    <div class="toolbar">
+      <div class="search-field"><input type="search" name="q" value="{{ term }}" placeholder="Search products" aria-label="Search products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn-s filter-toggle" data-toggle-filters>Filters</button>
+        <select class="k-select" name="sort" aria-label="Sort">{% for k, l in [('featured','Featured'),('newest','Newest'),('price_asc','Price: low to high'),('price_desc','Price: high to low'),('name','Name A–Z')] %}<option value="{{ k }}" {{ 'selected' if sort==k }}>{{ l }}</option>{% endfor %}</select>
+      </div>
+    </div>
+    <div class="shop-layout">
+      <aside class="filters" aria-label="Filters">
+        <div class="f-group"><h6>Category</h6>{% for c in categories %}<label class="f-opt"><input type="radio" name="category" value="{{ c.slug }}" data-clearable {{ 'checked' if f.get('category')==c.slug }}><span>{{ c.name }}</span></label>{% endfor %}</div>
+        <div class="f-group"><h6>Sport</h6>{% for s in sports %}<label class="f-opt"><input type="radio" name="sport" value="{{ s }}" data-clearable {{ 'checked' if f.get('sport')==s }}><span>{{ s }}</span></label>{% endfor %}</div>
+        <div class="f-group"><h6>Size</h6><div class="chips">{% for s in sizes %}<label class="chip" style="cursor:pointer"><input type="radio" name="size" value="{{ s }}" data-clearable hidden {{ 'checked' if f.get('size')==s }}>{{ s }}</label>{% endfor %}</div></div>
+        <div class="f-group"><h6>Price (₹)</h6><div class="price-inputs"><input class="k-input" type="number" min="0" name="min" placeholder="Min" value="{{ f.get('min','') }}" aria-label="Minimum price"><span class="muted">–</span><input class="k-input" type="number" min="0" name="max" placeholder="Max" value="{{ f.get('max','') }}" aria-label="Maximum price"></div></div>
+        <a href="#" id="clear-filters" class="link-arrow d-inline-block mt-2">Clear all</a>
+      </aside>
+      <section id="results" aria-live="polite">{% include "partials/shop_results.html" %}</section>
+    </div>
+  </form>
+</div></div>
+{% endblock %}
+{% block scripts %}<script>
+// highlight selected size chips (radio hidden inside label)
+document.addEventListener('change',e=>{if(e.target.name==='size'){document.querySelectorAll('.filters .chip').forEach(c=>c.classList.toggle('sel',c.querySelector('input')?.checked))}});
+document.querySelectorAll('.filters .chip').forEach(c=>c.classList.toggle('sel',c.querySelector('input')?.checked));
+</script>{% endblock %}

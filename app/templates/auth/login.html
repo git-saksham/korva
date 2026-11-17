@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create account' if mode=='register' else 'Sign in' }} — {{ BRAND }}{% endblock %}
+{% macro fld(f, type='text', ac='') %}
+<div class="field"><label for="{{ f.id }}">{{ f.label.text }}</label>{{ f(class_='k-input' ~ (' is-invalid' if f.errors else ''), type=type, autocomplete=ac, required=true, minlength=(8 if (type=='password' and f.name=='password' and mode=='register') else false)) }}{% for e in f.errors %}<div class="err-msg">{{ e }}</div>{% endfor %}</div>
+{% endmacro %}
+{% block content %}
+<div class="page"><div class="container-k"><div class="auth-wrap">
+  <h1 class="display page-title mb-4" style="font-size:clamp(2.2rem,5vw,3.4rem)">{{ 'Join KORVA' if mode=='register' else 'Welcome back' }}</h1>
+  <div class="auth-tabs"><a href="{{ url_for('auth.login', next=request.args.get('next')) }}" class="{{ 'on' if mode=='login' }}">Sign in</a><a href="{{ url_for('auth.register', next=request.args.get('next')) }}" class="{{ 'on' if mode=='register' }}">Register</a></div>
+  {% if mode == 'login' %}
+  <form method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}" class="needs-validation" novalidate>{{ form.hidden_tag() }}
+    {{ fld(form.email, 'email', 'email') }}{{ fld(form.password, 'password', 'current-password') }}
+    <label class="f-opt mb-4"><input type="checkbox" name="remember"><span>Keep me signed in</span></label>
+    <button class="btn-k accent block" type="submit">Sign in</button>
+  </form>
+  {% else %}
+  <form method="post" action="{{ url_for('auth.register', next=request.args.get('next')) }}" class="needs-validation" novalidate>{{ register_form.hidden_tag() }}
+    {{ fld(register_form.name, 'text', 'name') }}{{ fld(register_form.email, 'email', 'email') }}{{ fld(register_form.password, 'password', 'new-password') }}{{ fld(register_form.confirm, 'password', 'new-password') }}
+    <button class="btn-k accent block mt-2" type="submit">Create account</button>
+  </form>
+  {% endif %}
+</div></div></div>
+{% endblock %}

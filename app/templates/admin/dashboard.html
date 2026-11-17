@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ BRAND }}{% endblock %}
+{% block bodyclass %}{% endblock %}
+{% block promo %}{% endblock %}{% block nav %}{% endblock %}{% block footer %}{% endblock %}
+{% set tabs = [('overview','Overview'),('products','Products'),('inventory','Inventory'),('orders','Orders'),('users','Users')] %}
+{% block content %}
+<div class="admin-shell">
+  <aside class="admin-side">
+    <a href="{{ url_for('main.home') }}" class="wordmark mb-4 d-inline-flex">{{ BRAND }}</a><div class="eyebrow mb-3 ps-1">Admin</div>
+    {% for k, l in tabs %}<a class="tab {{ 'on' if tab==k }}" href="{{ url_for('admin.dashboard', tab=k) }}">{{ l }}</a>{% endfor %}
+    <div class="foot mt-5 pt-4" style="border-top:1px solid var(--line)"><a class="tab" href="{{ url_for('main.home') }}">← Storefront</a>
+      <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="tab btn p-0 border-0 text-start w-100" style="background:none;padding:12px 14px!important">Sign out</button></form></div>
+  </aside>
+  <div class="admin-main">
+  {% if tab == 'overview' %}
+    <h1 class="display">Overview</h1>
+    <div class="kpis">
+      <div class="kpi"><div class="eyebrow">Revenue</div><div class="v">{{ stats.revenue|money }}</div></div>
+      <div class="kpi"><div class="eyebrow">Orders</div><div class="v">{{ stats.orders }}</div></div>
+      <div class="kpi"><div class="eyebrow">Products</div><div class="v">{{ stats.products }}</div></div>
+      <div class="kpi"><div class="eyebrow">Users</div><div class="v">{{ stats.users }}</div></div>
+    </div>
+    <div class="panel"><h5>Revenue — last 14 days</h5>
+      <div class="bars">{% for c in chart %}<div class="b" style="height:{{ [c.pct, 2]|max }}%"><span>{{ c.label }}: {{ c.value|money }}</span></div>{% endfor %}</div>
+      <div class="bar-labels">{% for c in chart %}<span>{{ c.label[:6] }}</span>{% endfor %}</div></div>
+    <div class="row g-3">
+      <div class="col-xl-7"><div class="panel"><h5>Recent orders</h5>
+        <table class="k-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>
+        {% for o in recent_orders %}<tr><td>{{ o.number }}</td><td>{{ o.ship_name }}</td><td>{{ o.total|money }}</td><td><span class="status {{ o.status }}">{{ o.status }}</span></td></tr>{% else %}<tr><td colspan="4" class="muted">No orders yet.</td></tr>{% endfor %}</tbody></table></div></div>
+      <div class="col-xl-5"><div class="panel"><h5>Low stock (≤ {{ low }})</h5>
+        <table class="k-table"><tbody>{% for v in low_stock[:8] %}<tr><td>{{ v.product.name }}<div class="muted" style="font-size:.75rem">{{ v.color_name }} · {{ v.size }}</div></td><td class="text-end"><span class="status {{ 'Cancelled' if v.stock == 0 else 'Pending' }}">{{ v.stock }} left</span></td></tr>{% else %}<tr><td class="muted">All stocked.</td></tr>{% endfor %}</tbody></table>
+        {% if low_stock|length > 8 %}<a class="link-arrow d-inline-block mt-3" href="{{ url_for('admin.dashboard', tab='inventory') }}">View all {{ low_stock|length }}</a>{% endif %}</div></div>
+    </div>
+
+  {% elif tab == 'products' %}
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3"><h1 class="display">Products</h1><button class="btn-k accent" data-product-form="{{ url_for('admin.product_form') }}" data-title="New product">+ New product</button></div>
+    <div class="panel p-0"><table class="k-table"><thead><tr><th></th><th>Product</th><th>Category</th><th>Sport</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for p in products %}<tr><td><img class="thumb-s" src="{{ p.image_url() }}" alt=""></td><td><b>{{ p.name }}</b></td><td>{{ p.category.name }}</td><td>{{ p.sport }}</td><td>{{ p.price|money }}</td><td>{{ p.total_stock }}</td><td>{{ 'Active' if p.is_active else 'Hidden' }}</td>
+        <td class="text-end text-nowrap"><button class="btn-s" data-product-form="{{ url_for('admin.product_form', pid=p.id) }}" data-title="Edit product">Edit</button>
+        <form method="post" action="{{ url_for('admin.product_delete', pid=p.id) }}" class="d-inline" onsubmit="return confirm('Delete {{ p.name|e }}? This cannot be undone.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-s danger">Delete</button></form></td></tr>{% endfor %}</tbody></table></div>
+    <div class="modal fade" id="productModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="productModalTitle">Product</h5><button type="button" class="k-close" data-bs-dismiss="modal" aria-label="Close">✕</button></div><div class="modal-body"></div></div></div></div>
+
+  {% elif tab == 'inventory' %}
+    <h1 class="display">Inventory</h1>
+    <div class="panel p-0"><table class="k-table"><thead><tr><th>Product</th><th>Colour</th><th>Size</th><th>SKU</th><th>Stock</th></tr></thead><tbody>
+      {% for v in variants %}<tr class="{{ 'low-row' if v.stock <= low }}"><td>{{ v.product.name }}</td><td><span class="sw me-2" style="background:{{ v.color_hex }}"></span>{{ v.color_name }}</td><td>{{ v.size }}</td><td class="muted">{{ v.sku }}</td><td><input type="number" min="0" class="k-input stock-in" value="{{ v.stock }}" data-stock-input="{{ v.id }}" aria-label="Stock"></td></tr>{% endfor %}</tbody></table></div>
+
+  {% elif tab == 'orders' %}
+    <h1 class="display">Orders</h1>
+    <div class="panel p-0"><table class="k-table"><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for o in orders %}<tr><td><b>{{ o.number }}</b></td><td>{{ o.created_at.strftime('%d %b, %H:%M') }}</td><td>{{ o.ship_name }}</td><td>{{ o.total|money }}</td>
+        <td><select class="k-select py-1" data-order-status="{{ o.id }}" aria-label="Status">{% for s in statuses %}<option {{ 'selected' if o.status==s }}>{{ s }}</option>{% endfor %}</select></td>
+        <td><button class="btn-s" data-order-view="{{ url_for('admin.order_fragment', oid=o.id) }}">Details</button></td></tr>{% else %}<tr><td colspan="6" class="muted">No orders yet.</td></tr>{% endfor %}</tbody></table></div>
+    <div class="modal fade" id="orderModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Order details</h5><button type="button" class="k-close" data-bs-dismiss="modal" aria-label="Close">✕</button></div><div class="modal-body"></div></div></div></div>
+
+  {% elif tab == 'users' %}
+    <h1 class="display">Users</h1>
+    <div class="panel p-0"><table class="k-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Orders</th><th>Joined</th></tr></thead><tbody>
+      {% for u in users %}<tr><td>{{ u.name }}</td><td>{{ u.email }}</td><td>{% if u.is_admin %}<span class="tag accent">Admin</span>{% else %}Customer{% endif %}</td><td>{{ order_counts.get(u.id, 0) }}</td><td>{{ u.created_at.strftime('%d %b %Y') }}</td></tr>{% endfor %}</tbody></table></div>
+  {% endif %}
+  </div>
+</div>
+{% endblock %}

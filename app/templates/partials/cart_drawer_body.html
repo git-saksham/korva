@@ -1,0 +1,26 @@
+{% set items = cart.items if cart else [] %}
+{% if not items %}
+  <div class="cart-empty"><h3>Your bag is empty</h3><p>Gear up for your next session.</p><a href="{{ url_for('main.shop') }}" class="btn-k mt-3">Shop collection</a></div>
+{% else %}
+  <div class="cart-lines">
+    {% for i in items %}{% set p = i.variant.product %}
+    <div class="cline" data-item="{{ i.id }}">
+      <a class="im" href="{{ url_for('main.product', slug=p.slug) }}"><img src="{{ p.image_url(i.variant.color_hex) }}" alt=""></a>
+      <div><div class="nm">{{ p.name }}</div><div class="opt">{{ i.variant.color_name }} · {{ i.variant.size }}</div>
+        <div class="qty sm"><button type="button" data-cart-qty="-1" aria-label="Decrease">−</button><input value="{{ i.quantity }}" readonly aria-label="Quantity"><button type="button" data-cart-qty="1" aria-label="Increase">+</button></div>
+        <button class="rm" data-cart-remove>Remove</button></div>
+      <div style="font-weight:600">{{ i.line_total|money }}</div>
+    </div>{% endfor %}
+  </div>
+  <div class="cart-foot">
+    {% for m in issues %}<div class="issue">{{ m }}</div>{% endfor %}
+    {% set left = FREE_SHIP - t.subtotal %}
+    <div style="font-size:.8rem" class="muted">{% if left > 0 %}Add <b style="color:var(--text)">{{ left|money }}</b> for free shipping{% else %}You've unlocked <b style="color:var(--accent)">free shipping</b>{% endif %}</div>
+    <div class="ship-bar"><i style="width:{{ [100, (t.subtotal / FREE_SHIP * 100)|round]|min }}%"></i></div>
+    <div class="row-sum"><span>Subtotal</span><span>{{ t.subtotal|money }}</span></div>
+    <div class="row-sum"><span>Shipping</span><span>{{ 'Free' if t.shipping == 0 else t.shipping|money }}</span></div>
+    <div class="row-sum total"><span>Total</span><span>{{ t.total|money }}</span></div>
+    <a href="{{ url_for('checkout.checkout') }}" class="btn-k accent block mt-3 {{ 'disabled' if issues }}">Checkout <span class="arrow">→</span></a>
+    <a href="{{ url_for('cart.view') }}" class="d-block text-center mt-3 muted" style="font-size:.8rem;text-decoration:underline">View full bag</a>
+  </div>
+{% endif %}

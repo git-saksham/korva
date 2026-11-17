@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.number }} — {{ BRAND }}{% endblock %}
+{% block content %}
+<div class="page"><div class="container-k" style="max-width:1000px">
+  {% if placed %}<div class="alert-k success mb-4"><b>Order confirmed.</b> Thank you — a confirmation has been sent to {{ order.ship_email }}.</div>{% endif %}
+  <a class="link-arrow" href="{{ url_for('account.account') }}">← All orders</a>
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mt-4"><div><div class="eyebrow mb-2">Order</div><h1 class="display page-title" style="font-size:clamp(1.8rem,4vw,3rem)">{{ order.number }}</h1></div><span class="status {{ order.status }}">{{ order.status }}</span></div>
+  {% set flow = ['Pending','Paid','Processing','Shipped','Delivered'] %}
+  {% if order.status != 'Cancelled' %}<div class="stepper">{% for s in flow %}<div class="{{ 'done' if flow.index(order.status) >= loop.index0 }}">{{ s }}</div>{% endfor %}</div>{% endif %}
+  <div class="row g-5 mt-1">
+    <div class="col-lg-7">
+      {% for i in order.items %}<div class="co-line"><div class="im"><img src="{{ url_for('main.garment_art', garment=i.garment or 'tee', hex_color=(i.color_hex or '#222').lstrip('#')) }}" alt=""><span class="q">{{ i.quantity }}</span></div>
+        <div class="flex-grow-1"><div class="display" style="font-size:.9rem">{{ i.product_name }}</div><div class="muted" style="font-size:.8rem">{{ i.color_name }} · {{ i.size }}</div></div><div>{{ i.line_total|money }}</div></div>{% endfor %}
+      <div class="row-sum mt-3"><span>Subtotal</span><span>{{ order.subtotal|money }}</span></div><div class="row-sum"><span>Shipping</span><span>{{ 'Free' if order.shipping == 0 else order.shipping|money }}</span></div><div class="row-sum total"><span>Total</span><span>{{ order.total|money }}</span></div>
+    </div>
+    <div class="col-lg-5"><div class="card-k">
+      <div class="eyebrow mb-2">Ship to</div><p>{{ order.ship_name }}<br>{{ order.ship_address }}<br>{{ order.ship_city }}, {{ order.ship_state }} {{ order.ship_postal }}<br>{{ order.ship_phone }}</p>
+      <div class="eyebrow mb-2 mt-4">Payment</div><p class="mb-0">{{ (order.payment.method or '')|upper }} · {{ order.payment.status|capitalize }}<br><span class="muted" style="font-size:.8rem">Ref {{ order.payment.reference }}</span></p>
+      <div class="eyebrow mb-2 mt-4">Placed</div><p class="mb-0">{{ order.created_at.strftime('%d %b %Y, %H:%M') }}</p>
+    </div></div>
+  </div>
+</div></div>
+{% endblock %}

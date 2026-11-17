@@ -1,0 +1,40 @@
+{% set ep = request.endpoint or '' %}
+<header class="k-nav {% block navmode %}{% endblock %}" id="nav">
+  <div class="container-k inner">
+    <div class="d-flex align-items-center gap-3">
+      <button class="icon-btn d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h18M3 16h18"/></svg></button>
+      <a href="{{ url_for('main.home') }}" class="wordmark" aria-label="{{ BRAND }} home">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h4v7l8-7h5l-9 8 9 10h-5l-8-9v9H4z"/></svg>{{ BRAND }}</a>
+    </div>
+    <ul class="nav-links d-none d-lg-flex">
+      <li><a href="{{ url_for('main.shop') }}" class="{{ 'active' if ep=='main.shop' and not request.args.get('sport') }}">Shop</a></li>
+      <li><a href="{{ url_for('main.shop', sport='Running') }}" class="{{ 'active' if request.args.get('sport')=='Running' }}">Running</a></li>
+      <li><a href="{{ url_for('main.shop', sport='Training') }}" class="{{ 'active' if request.args.get('sport')=='Training' }}">Training</a></li>
+      <li><a href="{{ url_for('main.shop', category='outerwear') }}">Outerwear</a></li>
+    </ul>
+    <div class="nav-tools">
+      <button class="icon-btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}<a class="icon-btn d-none d-sm-grid" href="{{ url_for('admin.dashboard') }}" aria-label="Admin" title="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></a>{% endif %}
+        <a class="icon-btn" href="{{ url_for('account.account') }}" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-6 8-6s7 1.5 8 6"/></svg></a>
+      {% else %}
+        <a class="icon-btn" href="{{ url_for('auth.login') }}" aria-label="Sign in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-6 8-6s7 1.5 8 6"/></svg></a>
+      {% endif %}
+      <a class="icon-btn" href="{{ url_for('cart.view') }}" data-open-cart aria-label="Bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="count-pill" data-cart-count data-n="{{ cart_count }}">{{ cart_count }}</span></a>
+    </div>
+  </div>
+</header>
+<div class="offcanvas offcanvas-start k-drawer" tabindex="-1" id="mobileNav" style="--bs-offcanvas-width:min(340px,86vw);border-right:1px solid var(--line);border-left:0">
+  <div class="offcanvas-header"><span class="wordmark">{{ BRAND }}</span><button class="k-close" data-bs-dismiss="offcanvas" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+  <div class="offcanvas-body" style="padding:24px">
+    {% for label, url in [('Shop all', url_for('main.shop')), ('Running', url_for('main.shop', sport='Running')), ('Training', url_for('main.shop', sport='Training')), ('Yoga', url_for('main.shop', sport='Yoga')), ('Outerwear', url_for('main.shop', category='outerwear'))] %}
+      <a href="{{ url }}" class="display" style="font-size:2.1rem;padding:8px 0;display:block">{{ label }}</a>{% endfor %}
+    <div class="mt-auto pt-4" style="border-top:1px solid var(--line);margin-top:28px">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account.account') }}" class="d-block py-2">My account</a>
+        {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}" class="d-block py-2">Admin dashboard</a>{% endif %}
+        <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-s mt-2">Sign out</button></form>
+      {% else %}<a href="{{ url_for('auth.login') }}" class="btn-k block">Sign in / Register</a>{% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="theme-color" content="#0a0a0b">
+  <title>{% block title %}{{ BRAND }} — Built for the long run{% endblock %}</title>
+  <meta name="description" content="{% block desc %}KORVA is performance sportswear engineered for runners, lifters and everyone who keeps moving.{% endblock %}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230a0a0b'/%3E%3Cpath fill='%23c6ff3d' d='M5 3h4v7l8-7h5l-9 8 9 10h-5l-8-9v9H5z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/korva.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block bodyclass %}has-promo{% endblock %}">
+  {% block promo %}<div class="promo-bar">Free shipping over {{ FREE_SHIP|money }} · 30-day returns</div>{% endblock %}
+  {% block nav %}{% include "partials/navbar.html" %}{% endblock %}
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}<span hidden data-flash="{{ m }}" data-cat="{{ cat }}"></span>{% endfor %}{% endwith %}
+  <main>{% block content %}{% endblock %}</main>
+  {% block footer %}{% include "partials/footer.html" %}{% endblock %}
+
+  <div class="offcanvas offcanvas-end k-drawer" tabindex="-1" id="cartDrawer" aria-labelledby="cartTitle">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="cartTitle">Your bag (<span data-cart-count data-n="{{ cart_count }}">{{ cart_count }}</span>)</h5>
+      <button class="k-close" data-bs-dismiss="offcanvas" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <div class="offcanvas-body"><div class="cart-body" data-cart-body style="height:100%"></div></div>
+  </div>
+
+  <div class="modal fade search-modal" id="searchModal" tabindex="-1" aria-label="Search">
+    <div class="modal-dialog modal-fullscreen"><div class="modal-content">
+      <div class="container-k pt-4 pb-5" style="max-width:900px">
+        <div class="d-flex justify-content-between align-items-center mb-4"><span class="eyebrow">Search</span>
+          <button class="k-close" data-bs-dismiss="modal" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+        <form action="{{ url_for('main.shop') }}" role="search"><input class="search-big" name="q" placeholder="Search KORVA" autocomplete="off" aria-label="Search products"></form>
+        <div id="search-out" class="mt-3"></div>
+      </div>
+    </div></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/korva.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

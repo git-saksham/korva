@@ -1,0 +1,31 @@
+<form method="post" action="{{ url_for('admin.product_save') }}" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if p %}<input type="hidden" name="id" value="{{ p.id }}">{% endif %}
+  <div class="row g-3">
+    <div class="col-md-8 field mb-0"><label>Name</label><input class="k-input" name="name" required value="{{ p.name if p else '' }}"></div>
+    <div class="col-md-4 field mb-0"><label>Price (₹)</label><input class="k-input" name="price" type="number" step="0.01" min="0" required value="{{ p.price if p else '' }}"></div>
+    <div class="col-md-4 field mb-0"><label>Category</label><select class="k-input" name="category_id">{% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if p and p.category_id==c.id }}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-4 field mb-0"><label>Sport</label><select class="k-input" name="sport">{% for s in sports %}<option {{ 'selected' if p and p.sport==s }}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="col-md-4 field mb-0"><label>Compare-at price</label><input class="k-input" name="compare_at_price" type="number" step="0.01" min="0" value="{{ p.compare_at_price if p and p.compare_at_price else '' }}"></div>
+    <div class="col-12 field mb-0"><label>Description</label><textarea class="k-input" name="description" rows="3">{{ p.description if p else '' }}</textarea></div>
+    <div class="col-12 field mb-0"><label>Specifications (one “Label: value” per line)</label><textarea class="k-input" name="specs" rows="4">{{ p.specs if p else '' }}</textarea></div>
+    <div class="col-md-4 field mb-0"><label>Artwork style (when no image)</label><select class="k-input" name="garment">{% for g in garments %}<option {{ 'selected' if p and p.garment==g }}>{{ g }}</option>{% endfor %}</select></div>
+    <div class="col-md-4 field mb-0"><label>Upload image</label><input class="k-input" type="file" name="image" accept="image/png,image/jpeg,image/webp"></div>
+    <div class="col-md-4 field mb-0"><label>…or image URL (https)</label><input class="k-input" name="image_url" placeholder="https://" value="{{ p.image_path if p and p.image_path and p.image_path.startswith('http') else '' }}"></div>
+    {% if p and p.image_path %}<div class="col-12"><label class="f-opt"><input type="checkbox" name="clear_image" value="1"><span>Remove custom image (use generated artwork)</span></label></div>{% endif %}
+    <div class="col-12"><div class="d-flex gap-4 flex-wrap">
+      {% for k, l in [('featured','Featured'),('bestseller','Best seller'),('is_new','New'),('is_active','Visible in shop')] %}
+      <label class="f-opt"><input type="checkbox" name="{{ k }}" value="1" {{ 'checked' if (p and p[k]) or (not p and k=='is_active') }}><span>{{ l }}</span></label>{% endfor %}</div></div>
+
+    <div class="col-12 field mb-0 mt-3"><label>Sizes</label><div class="d-flex gap-3 flex-wrap">
+      {% for s in all_sizes %}<label class="f-opt"><input type="checkbox" name="sizes" value="{{ s }}" {{ 'checked' if (p and s in p.sizes) or (not p and s in ['S','M','L','XL']) }}><span>{{ s }}</span></label>{% endfor %}</div></div>
+    <div class="col-12 field mb-0"><label>Colours</label>
+      <div id="colors">{% for c in (p.colors if p and p.colors else [{'name':'Onyx','hex':'#17171a'}]) %}
+        <div class="color-row d-flex gap-2 mb-2"><input class="k-input" name="color_name" placeholder="Name" value="{{ c.name }}"><input type="color" name="color_hex" value="{{ c.hex }}" style="width:56px;height:46px;background:none;border:1px solid var(--line-2);padding:3px"><button type="button" class="btn-s rm-color">✕</button></div>{% endfor %}</div>
+      <button type="button" class="btn-s" id="add-color">+ Add colour</button>
+      <template id="color-tpl"><div class="color-row d-flex gap-2 mb-2"><input class="k-input" name="color_name" placeholder="Name"><input type="color" name="color_hex" value="#3b3f45" style="width:56px;height:46px;background:none;border:1px solid var(--line-2);padding:3px"><button type="button" class="btn-s rm-color">✕</button></div></template></div>
+    <div class="col-12 field mb-0"><label>Stock per variant</label><div style="overflow-x:auto"><table class="matrix"><tbody id="matrix-body"></tbody></table></div></div>
+  </div>
+  <script type="application/json" id="stock-data">{{ stock|tojson }}</script>
+  <div class="d-flex justify-content-end gap-2 mt-4"><button type="button" class="btn-k-ghost" data-bs-dismiss="modal">Cancel</button><button class="btn-k accent" type="submit">Save product</button></div>
+</form>
